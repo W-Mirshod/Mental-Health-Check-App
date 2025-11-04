@@ -2,21 +2,31 @@ const API_BASE = window.location.origin;
 
 // Tab management
 function showTab(tabName) {
-    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    try {
+        document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(content => content.classList.remove('active'));
 
-    document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
-    document.getElementById(`${tabName}-tab`).classList.add('active');
+        const tabButton = document.querySelector(`[onclick="showTab('${tabName}')"]`);
+        const tabContent = document.getElementById(`${tabName}-tab`);
+        
+        if (tabButton) tabButton.classList.add('active');
+        if (tabContent) tabContent.classList.add('active');
+    } catch (error) {
+        console.error('Error switching tab:', error);
+    }
 }
 
 // Message display
 function showMessage(message, type = 'success') {
     const msgDiv = document.createElement('div');
-    msgDiv.className = `${type}-message`;
+    msgDiv.className = `message ${type}`;
     msgDiv.textContent = message;
 
-    document.querySelector('.container').insertBefore(msgDiv, document.querySelector('main'));
-    setTimeout(() => msgDiv.remove(), 5000);
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.insertBefore(msgDiv, mainContent.firstChild);
+        setTimeout(() => msgDiv.remove(), 5000);
+    }
 }
 
 // Dashboard stats
@@ -37,43 +47,92 @@ async function loadDashboardStats() {
 
 // Mood tracking
 function showMoodForm() {
-    document.getElementById('mood-form').classList.remove('hidden');
-    document.getElementById('add-mood-btn').classList.add('hidden');
+    console.log('showMoodForm called');
+    const form = document.getElementById('mood-form');
+    const btn = document.getElementById('add-mood-btn');
+    if (form) {
+        form.classList.remove('hidden');
+        console.log('Mood form shown');
+    } else {
+        console.error('Mood form not found');
+    }
+    if (btn) {
+        btn.classList.add('hidden');
+    }
 }
 
 function hideMoodForm() {
-    document.getElementById('mood-form').classList.add('hidden');
-    document.getElementById('add-mood-btn').classList.remove('hidden');
-    document.getElementById('create-mood-form').reset();
+    console.log('hideMoodForm called');
+    const form = document.getElementById('mood-form');
+    const btn = document.getElementById('add-mood-btn');
+    const formElement = document.getElementById('create-mood-form');
+    if (form) form.classList.add('hidden');
+    if (btn) btn.classList.remove('hidden');
+    if (formElement) formElement.reset();
 }
 
 async function createMoodEntry(event) {
     event.preventDefault();
 
-    const formData = new FormData(event.target);
+    const moodLevelEl = document.getElementById('mood-level');
+    const energyLevelEl = document.getElementById('energy-level');
+    const stressLevelEl = document.getElementById('stress-level');
+    const sleepHoursEl = document.getElementById('sleep-hours');
+    const notesEl = document.getElementById('mood-notes');
+
+    const moodLevel = parseInt(moodLevelEl.value);
+    const energyLevel = energyLevelEl.value ? parseInt(energyLevelEl.value) : null;
+    const stressLevel = stressLevelEl.value ? parseInt(stressLevelEl.value) : null;
+    const sleepHours = sleepHoursEl.value ? parseFloat(sleepHoursEl.value) : null;
+    const notes = notesEl.value.trim() || null;
+
     const moodData = {
-        mood_level: parseInt(document.getElementById('mood-level').value),
-        energy_level: parseInt(document.getElementById('energy-level').value),
-        stress_level: parseInt(document.getElementById('stress-level').value),
-        sleep_hours: document.getElementById('sleep-hours').value ? parseFloat(document.getElementById('sleep-hours').value) : null,
-        notes: document.getElementById('mood-notes').value || null
+        mood_level: moodLevel,
+        energy_level: energyLevel,
+        stress_level: stressLevel,
+        sleep_hours: sleepHours,
+        notes: notes
     };
 
+    // Validate required fields
+    if (!moodData.mood_level || moodData.mood_level < 1 || moodData.mood_level > 10) {
+        showMessage('Mood level must be between 1 and 10', 'error');
+        return;
+    }
+
     try {
+        console.log('Sending mood data:', moodData);
+        
         const response = await fetch(`${API_BASE}/api/mood`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(moodData)
         });
 
-        if (!response.ok) throw new Error('Failed to save mood entry');
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            console.error('Failed to parse response:', jsonError);
+            const text = await response.text();
+            console.error('Response text:', text);
+            throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
 
+        if (!response.ok) {
+            const errorMsg = data.detail || data.message || `Failed to save mood entry (${response.status})`;
+            console.error('Error response:', data);
+            throw new Error(errorMsg);
+        }
+
+        console.log('Mood entry saved successfully:', data);
         showMessage('Mood entry saved successfully!');
         hideMoodForm();
         loadMoodEntries();
         loadDashboardStats();
     } catch (error) {
-        showMessage(error.message, 'error');
+        console.error('Error creating mood entry:', error);
+        showMessage(error.message || 'Failed to save mood entry. Please check the console for details.', 'error');
     }
 }
 
@@ -102,23 +161,29 @@ async function loadMoodEntries() {
         list.innerHTML = '';
         data.entries.forEach(entry => {
             const entryDiv = document.createElement('div');
-            entryDiv.className = 'mood-entry';
+            entryDiv.className = 'list-item';
 
             const moodEmoji = entry.mood_level >= 7 ? '😊' : entry.mood_level >= 4 ? '😐' : '😢';
             const energyEmoji = entry.energy_level >= 7 ? '⚡' : entry.energy_level >= 4 ? '🔋' : '😴';
             const stressEmoji = entry.stress_level >= 7 ? '😰' : entry.stress_level >= 4 ? '😟' : '😌';
 
             entryDiv.innerHTML = `
-                <div class="entry-header">
-                    <div class="entry-date">${new Date(entry.date).toLocaleDateString()}</div>
-                    <div class="mood-levels">
-                        <span class="mood-level">${moodEmoji} ${entry.mood_level}/10</span>
-                        <span class="mood-level">${energyEmoji} ${entry.energy_level}/10</span>
-                        <span class="mood-level">${stressEmoji} ${entry.stress_level}/10</span>
-                    </div>
+                <div class="item-header">
+                    <div class="item-date">${new Date(entry.date).toLocaleDateString()}</div>
                 </div>
-                ${entry.sleep_hours ? `<div>Sleep: ${entry.sleep_hours} hours</div>` : ''}
-                ${entry.notes ? `<div class="mood-notes">${entry.notes}</div>` : ''}
+                <div class="item-meta">
+                    <div class="meta-item">
+                        <span class="meta-badge primary">${moodEmoji} Mood: ${entry.mood_level}/10</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-badge primary">${energyEmoji} Energy: ${entry.energy_level}/10</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-badge ${entry.stress_level >= 7 ? 'warning' : 'success'}">${stressEmoji} Stress: ${entry.stress_level}/10</span>
+                    </div>
+                    ${entry.sleep_hours ? `<div class="meta-item"><span class="meta-badge">💤 Sleep: ${entry.sleep_hours}h</span></div>` : ''}
+                </div>
+                ${entry.notes ? `<div style="margin-top: 1rem; color: var(--text-secondary);">${entry.notes}</div>` : ''}
             `;
 
             list.appendChild(entryDiv);
@@ -133,27 +198,44 @@ async function loadMoodEntries() {
 
 // Journal functionality
 function showJournalForm() {
-    document.getElementById('journal-form').classList.remove('hidden');
-    document.getElementById('add-journal-btn').classList.add('hidden');
+    console.log('showJournalForm called');
+    const form = document.getElementById('journal-form');
+    const btn = document.getElementById('add-journal-btn');
+    if (form) {
+        form.classList.remove('hidden');
+        console.log('Journal form shown');
+    } else {
+        console.error('Journal form not found');
+    }
+    if (btn) btn.classList.add('hidden');
 }
 
 function hideJournalForm() {
-    document.getElementById('journal-form').classList.add('hidden');
-    document.getElementById('add-journal-btn').classList.remove('hidden');
-    document.getElementById('create-journal-form').reset();
+    console.log('hideJournalForm called');
+    const form = document.getElementById('journal-form');
+    const btn = document.getElementById('add-journal-btn');
+    const formElement = document.getElementById('create-journal-form');
+    if (form) form.classList.add('hidden');
+    if (btn) btn.classList.remove('hidden');
+    if (formElement) formElement.reset();
 }
 
 async function createJournalEntry(event) {
     event.preventDefault();
 
-    const formData = new FormData(event.target);
     const journalData = {
-        title: document.getElementById('journal-title').value || null,
-        content: document.getElementById('journal-content').value,
+        title: document.getElementById('journal-title').value.trim() || null,
+        content: document.getElementById('journal-content').value.trim(),
         mood_before: document.getElementById('mood-before').value ? parseInt(document.getElementById('mood-before').value) : null,
         mood_after: document.getElementById('mood-after').value ? parseInt(document.getElementById('mood-after').value) : null,
-        tags: document.getElementById('journal-tags').value || null
+        tags: document.getElementById('journal-tags').value.trim() || null
     };
+
+    // Validate required fields
+    if (!journalData.content || journalData.content.length === 0) {
+        showMessage('Journal content is required', 'error');
+        return;
+    }
 
     try {
         const response = await fetch(`${API_BASE}/api/journal`, {
@@ -162,14 +244,21 @@ async function createJournalEntry(event) {
             body: JSON.stringify(journalData)
         });
 
-        if (!response.ok) throw new Error('Failed to save journal entry');
+        const data = await response.json();
+
+        if (!response.ok) {
+            const errorMsg = data.detail || data.message || 'Failed to save journal entry';
+            console.error('Error response:', data);
+            throw new Error(errorMsg);
+        }
 
         showMessage('Journal entry saved successfully!');
         hideJournalForm();
         loadJournalEntries();
         loadDashboardStats();
     } catch (error) {
-        showMessage(error.message, 'error');
+        console.error('Error creating journal entry:', error);
+        showMessage(error.message || 'Failed to save journal entry. Please try again.', 'error');
     }
 }
 
@@ -198,17 +287,17 @@ async function loadJournalEntries() {
         list.innerHTML = '';
         data.entries.forEach(entry => {
             const entryDiv = document.createElement('div');
-            entryDiv.className = 'journal-entry';
+            entryDiv.className = 'list-item';
 
             entryDiv.innerHTML = `
-                <div class="entry-header">
-                    <div class="entry-date">${new Date(entry.date).toLocaleDateString()}</div>
+                <div class="item-header">
+                    <div class="item-date">${new Date(entry.date).toLocaleDateString()}</div>
                 </div>
-                ${entry.title ? `<div class="journal-title">${entry.title}</div>` : ''}
-                <div class="journal-content">${entry.content}</div>
+                ${entry.title ? `<div style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary);">${entry.title}</div>` : ''}
+                <div style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem;">${entry.content}</div>
                 ${entry.mood_before || entry.mood_after ?
-                    `<div>Mood: ${entry.mood_before || '?'} → ${entry.mood_after || '?'}</div>` : ''}
-                ${entry.tags ? `<div class="journal-tags">Tags: ${entry.tags}</div>` : ''}
+                    `<div class="item-meta"><div class="meta-item"><span class="meta-badge primary">Mood: ${entry.mood_before || '?'} → ${entry.mood_after || '?'}</span></div></div>` : ''}
+                ${entry.tags ? `<div class="item-meta" style="margin-top: 0.5rem;"><div class="meta-item"><span class="meta-badge">Tags: ${entry.tags}</span></div></div>` : ''}
             `;
 
             list.appendChild(entryDiv);
@@ -223,27 +312,44 @@ async function loadJournalEntries() {
 
 // Activities functionality
 function showActivityForm() {
-    document.getElementById('activity-form').classList.remove('hidden');
-    document.getElementById('add-activity-btn').classList.add('hidden');
+    console.log('showActivityForm called');
+    const form = document.getElementById('activity-form');
+    const btn = document.getElementById('add-activity-btn');
+    if (form) {
+        form.classList.remove('hidden');
+        console.log('Activity form shown');
+    } else {
+        console.error('Activity form not found');
+    }
+    if (btn) btn.classList.add('hidden');
 }
 
 function hideActivityForm() {
-    document.getElementById('activity-form').classList.add('hidden');
-    document.getElementById('add-activity-btn').classList.remove('hidden');
-    document.getElementById('create-activity-form').reset();
+    console.log('hideActivityForm called');
+    const form = document.getElementById('activity-form');
+    const btn = document.getElementById('add-activity-btn');
+    const formElement = document.getElementById('create-activity-form');
+    if (form) form.classList.add('hidden');
+    if (btn) btn.classList.remove('hidden');
+    if (formElement) formElement.reset();
 }
 
 async function createActivity(event) {
     event.preventDefault();
 
-    const formData = new FormData(event.target);
     const activityData = {
         activity_type: document.getElementById('activity-type').value,
         duration_minutes: document.getElementById('activity-duration').value ? parseInt(document.getElementById('activity-duration').value) : null,
-        description: document.getElementById('activity-description').value || null,
+        description: document.getElementById('activity-description').value.trim() || null,
         mood_impact: document.getElementById('mood-impact').value ? parseInt(document.getElementById('mood-impact').value) : null,
-        notes: document.getElementById('activity-notes').value || null
+        notes: document.getElementById('activity-notes').value.trim() || null
     };
+
+    // Validate required fields
+    if (!activityData.activity_type) {
+        showMessage('Activity type is required', 'error');
+        return;
+    }
 
     try {
         const response = await fetch(`${API_BASE}/api/activities`, {
@@ -252,14 +358,21 @@ async function createActivity(event) {
             body: JSON.stringify(activityData)
         });
 
-        if (!response.ok) throw new Error('Failed to log activity');
+        const data = await response.json();
+
+        if (!response.ok) {
+            const errorMsg = data.detail || data.message || 'Failed to log activity';
+            console.error('Error response:', data);
+            throw new Error(errorMsg);
+        }
 
         showMessage('Activity logged successfully!');
         hideActivityForm();
         loadActivities();
         loadDashboardStats();
     } catch (error) {
-        showMessage(error.message, 'error');
+        console.error('Error creating activity:', error);
+        showMessage(error.message || 'Failed to log activity. Please try again.', 'error');
     }
 }
 
@@ -288,21 +401,25 @@ async function loadActivities() {
         list.innerHTML = '';
         data.activities.forEach(activity => {
             const activityDiv = document.createElement('div');
-            activityDiv.className = 'activity-item';
+            activityDiv.className = 'list-item';
 
             const typeEmoji = activity.activity_type === 'meditation' ? '🧘' :
                             activity.activity_type === 'exercise' ? '💪' :
                             activity.activity_type === 'reading' ? '📚' : '✨';
 
+            const moodImpactClass = activity.mood_impact > 0 ? 'success' : activity.mood_impact < 0 ? 'warning' : '';
+            
             activityDiv.innerHTML = `
-                <div class="entry-header">
-                    <div class="activity-type">${typeEmoji} ${activity.activity_type.replace('_', ' ')}</div>
-                    <div class="entry-date">${new Date(activity.date).toLocaleDateString()}</div>
+                <div class="item-header">
+                    <div style="font-weight: 600; color: var(--text-primary);">${typeEmoji} ${activity.activity_type.charAt(0).toUpperCase() + activity.activity_type.slice(1).replace('_', ' ')}</div>
+                    <div class="item-date">${new Date(activity.date).toLocaleDateString()}</div>
                 </div>
-                ${activity.duration_minutes ? `<div>Duration: ${activity.duration_minutes} minutes</div>` : ''}
-                ${activity.description ? `<div>${activity.description}</div>` : ''}
-                ${activity.mood_impact ? `<div>Mood impact: ${activity.mood_impact > 0 ? '+' : ''}${activity.mood_impact}</div>` : ''}
-                ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
+                <div class="item-meta">
+                    ${activity.duration_minutes ? `<div class="meta-item"><span class="meta-badge">⏱ ${activity.duration_minutes} min</span></div>` : ''}
+                    ${activity.mood_impact ? `<div class="meta-item"><span class="meta-badge ${moodImpactClass}">${activity.mood_impact > 0 ? '+' : ''}${activity.mood_impact} Impact</span></div>` : ''}
+                </div>
+                ${activity.description ? `<div style="margin-top: 1rem; color: var(--text-secondary);">${activity.description}</div>` : ''}
+                ${activity.notes ? `<div style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.875rem;">${activity.notes}</div>` : ''}
             `;
 
             list.appendChild(activityDiv);
@@ -317,27 +434,44 @@ async function loadActivities() {
 
 // Goals functionality
 function showGoalForm() {
-    document.getElementById('goal-form').classList.remove('hidden');
-    document.getElementById('add-goal-btn').classList.add('hidden');
+    console.log('showGoalForm called');
+    const form = document.getElementById('goal-form');
+    const btn = document.getElementById('add-goal-btn');
+    if (form) {
+        form.classList.remove('hidden');
+        console.log('Goal form shown');
+    } else {
+        console.error('Goal form not found');
+    }
+    if (btn) btn.classList.add('hidden');
 }
 
 function hideGoalForm() {
-    document.getElementById('goal-form').classList.add('hidden');
-    document.getElementById('add-goal-btn').classList.remove('hidden');
-    document.getElementById('create-goal-form').reset();
+    console.log('hideGoalForm called');
+    const form = document.getElementById('goal-form');
+    const btn = document.getElementById('add-goal-btn');
+    const formElement = document.getElementById('create-goal-form');
+    if (form) form.classList.add('hidden');
+    if (btn) btn.classList.remove('hidden');
+    if (formElement) formElement.reset();
 }
 
 async function createGoal(event) {
     event.preventDefault();
 
-    const formData = new FormData(event.target);
     const goalData = {
-        title: document.getElementById('goal-title').value,
-        description: document.getElementById('goal-description').value || null,
+        title: document.getElementById('goal-title').value.trim(),
+        description: document.getElementById('goal-description').value.trim() || null,
         goal_type: document.getElementById('goal-type').value,
         target_value: document.getElementById('target-value').value ? parseFloat(document.getElementById('target-value').value) : null,
         target_date: document.getElementById('target-date').value || null
     };
+
+    // Validate required fields
+    if (!goalData.title || goalData.title.length === 0) {
+        showMessage('Goal title is required', 'error');
+        return;
+    }
 
     try {
         const response = await fetch(`${API_BASE}/api/goals`, {
@@ -346,14 +480,21 @@ async function createGoal(event) {
             body: JSON.stringify(goalData)
         });
 
-        if (!response.ok) throw new Error('Failed to create goal');
+        const data = await response.json();
+
+        if (!response.ok) {
+            const errorMsg = data.detail || data.message || 'Failed to create goal';
+            console.error('Error response:', data);
+            throw new Error(errorMsg);
+        }
 
         showMessage('Goal created successfully!');
         hideGoalForm();
         loadGoals();
         loadDashboardStats();
     } catch (error) {
-        showMessage(error.message, 'error');
+        console.error('Error creating goal:', error);
+        showMessage(error.message || 'Failed to create goal. Please try again.', 'error');
     }
 }
 
@@ -382,19 +523,21 @@ async function loadGoals() {
         list.innerHTML = '';
         data.goals.forEach(goal => {
             const goalDiv = document.createElement('div');
-            goalDiv.className = 'goal-item';
+            goalDiv.className = 'list-item';
 
             const progressPercent = goal.target_value ? Math.min((goal.current_value / goal.target_value) * 100, 100) : 0;
             const statusEmoji = goal.is_completed ? '✅' : progressPercent >= 75 ? '🚀' : '🎯';
 
             goalDiv.innerHTML = `
-                <div class="entry-header">
-                    <div class="goal-title">${statusEmoji} ${goal.title}</div>
-                    <div class="entry-date">${goal.is_completed ? 'Completed' : 'Active'}</div>
+                <div class="item-header">
+                    <div style="font-weight: 600; color: var(--text-primary); font-size: 1.125rem;">${statusEmoji} ${goal.title}</div>
+                    <div class="meta-badge ${goal.is_completed ? 'success' : 'primary'}">${goal.is_completed ? 'Completed' : 'Active'}</div>
                 </div>
-                ${goal.description ? `<div>${goal.description}</div>` : ''}
-                <div>Progress: ${goal.current_value}${goal.target_value ? ` / ${goal.target_value}` : ''}</div>
-                ${goal.target_date ? `<div>Target: ${new Date(goal.target_date).toLocaleDateString()}</div>` : ''}
+                ${goal.description ? `<div style="margin-top: 0.75rem; color: var(--text-secondary);">${goal.description}</div>` : ''}
+                <div class="item-meta" style="margin-top: 1rem;">
+                    <div class="meta-item"><span class="meta-badge primary">Progress: ${goal.current_value}${goal.target_value ? ` / ${goal.target_value}` : ''}</span></div>
+                    ${goal.target_date ? `<div class="meta-item"><span class="meta-badge">Target: ${new Date(goal.target_date).toLocaleDateString()}</span></div>` : ''}
+                </div>
             `;
 
             list.appendChild(goalDiv);
@@ -418,24 +561,6 @@ document.addEventListener('input', function(e) {
     }
 });
 
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Form submissions
-    document.getElementById('create-mood-form').addEventListener('submit', createMoodEntry);
-    document.getElementById('create-journal-form').addEventListener('submit', createJournalEntry);
-    document.getElementById('create-activity-form').addEventListener('submit', createActivity);
-    document.getElementById('create-goal-form').addEventListener('submit', createGoal);
-
-    // Button click handlers
-    document.getElementById('add-mood-btn').addEventListener('click', showMoodForm);
-    document.getElementById('add-journal-btn').addEventListener('click', showJournalForm);
-    document.getElementById('add-activity-btn').addEventListener('click', showActivityForm);
-    document.getElementById('add-goal-btn').addEventListener('click', showGoalForm);
-
-    // Initialize the app
-    init();
-});
-
 // Initialize the app
 async function init() {
     try {
@@ -454,3 +579,90 @@ async function init() {
         showMessage('Failed to load application. Please refresh the page.', 'error');
     }
 }
+
+// Setup event listeners
+function setupEventListeners() {
+    try {
+        // Form submissions
+        const moodForm = document.getElementById('create-mood-form');
+        const journalForm = document.getElementById('create-journal-form');
+        const activityForm = document.getElementById('create-activity-form');
+        const goalForm = document.getElementById('create-goal-form');
+
+        if (moodForm) {
+            moodForm.addEventListener('submit', createMoodEntry);
+        } else {
+            console.warn('Mood form not found');
+        }
+        
+        if (journalForm) {
+            journalForm.addEventListener('submit', createJournalEntry);
+        } else {
+            console.warn('Journal form not found');
+        }
+        
+        if (activityForm) {
+            activityForm.addEventListener('submit', createActivity);
+        } else {
+            console.warn('Activity form not found');
+        }
+        
+        if (goalForm) {
+            goalForm.addEventListener('submit', createGoal);
+        } else {
+            console.warn('Goal form not found');
+        }
+
+        // Button click handlers
+        const addMoodBtn = document.getElementById('add-mood-btn');
+        const addJournalBtn = document.getElementById('add-journal-btn');
+        const addActivityBtn = document.getElementById('add-activity-btn');
+        const addGoalBtn = document.getElementById('add-goal-btn');
+
+        if (addMoodBtn) {
+            addMoodBtn.addEventListener('click', showMoodForm);
+            console.log('Mood button listener attached');
+        } else {
+            console.warn('Add mood button not found');
+        }
+        
+        if (addJournalBtn) {
+            addJournalBtn.addEventListener('click', showJournalForm);
+            console.log('Journal button listener attached');
+        } else {
+            console.warn('Add journal button not found');
+        }
+        
+        if (addActivityBtn) {
+            addActivityBtn.addEventListener('click', showActivityForm);
+            console.log('Activity button listener attached');
+        } else {
+            console.warn('Add activity button not found');
+        }
+        
+        if (addGoalBtn) {
+            addGoalBtn.addEventListener('click', showGoalForm);
+            console.log('Goal button listener attached');
+        } else {
+            console.warn('Add goal button not found');
+        }
+    } catch (error) {
+        console.error('Error setting up event listeners:', error);
+    }
+}
+
+// Wait for DOM to be ready
+(function() {
+    function ready() {
+        console.log('Setting up event listeners...');
+        setupEventListeners();
+        init();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ready);
+    } else {
+        // DOM is already loaded
+        ready();
+    }
+})();

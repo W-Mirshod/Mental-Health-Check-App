@@ -3,296 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧠 Mental Health Check</title>
+    <title>Mental Health Check</title>
     
-    <!-- Meta Description -->
     <meta name="description" content="Track your mood, journal your thoughts, and monitor your wellness journey">
     
-    <!-- Open Graph / Facebook / Telegram -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="🧠 Mental Health Check">
-    <meta property="og:description" content="Track your mood, journal your thoughts, and monitor your wellness journey">
-    <meta property="og:image" content="/static/images/og-image.png">
-    <meta property="og:url" content="">
-    <meta property="og:site_name" content="Mental Health Check">
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="🧠 Mental Health Check">
-    <meta name="twitter:description" content="Track your mood, journal your thoughts, and monitor your wellness journey">
-    <meta name="twitter:image" content="/static/images/og-image.png">
-    
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
-    <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🧠 Mental Health Check</h1>
-            <p class="subtitle">Track your mood, journal your thoughts, and monitor your wellness journey</p>
-            <div id="dashboard-stats" class="dashboard-stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="total-entries">0</div>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>🧠 Wellness</h1>
+                <p>Track your mental health journey</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-entries">0</div>
                     <div class="stat-label">Mood Entries</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="avg-mood">N/A</div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avg-mood">N/A</div>
                     <div class="stat-label">Avg Mood</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="journal-entries">0</div>
+                <div class="stat-item">
+                    <div class="stat-value" id="journal-entries">0</div>
                     <div class="stat-label">Journal Entries</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="active-goals">0</div>
+                <div class="stat-item">
+                    <div class="stat-value" id="active-goals">0</div>
                     <div class="stat-label">Active Goals</div>
                 </div>
             </div>
-        </header>
+        </aside>
 
-        <main>
-            <div class="tabs">
-                <button class="tab-button active" onclick="showTab('mood')">Mood</button>
-                <button class="tab-button" onclick="showTab('journal')">Journal</button>
-                <button class="tab-button" onclick="showTab('activities')">Activities</button>
-                <button class="tab-button" onclick="showTab('goals')">Goals</button>
-            </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('mood')">Mood</button>
+                <button class="nav-tab" onclick="showTab('journal')">Journal</button>
+                <button class="nav-tab" onclick="showTab('activities')">Activities</button>
+                <button class="nav-tab" onclick="showTab('goals')">Goals</button>
+            </nav>
 
             <!-- Mood Tab -->
-            <div id="mood-tab" class="tab-content active">
-                <div class="section-header">
-                    <h2>😊 Daily Mood Check</h2>
-                    <button id="add-mood-btn" class="primary-btn">Log Today's Mood</button>
-                </div>
-
-                <div id="mood-form" class="form-container hidden">
-                    <form id="create-mood-form">
-                        <h3>How are you feeling today?</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="mood-level">Mood Level (1-10)</label>
-                                <input type="range" id="mood-level" min="1" max="10" value="5">
-                                <div class="range-display">
-                                    <span>1</span>
-                                    <span id="mood-display">5</span>
-                                    <span>10</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="energy-level">Energy Level (1-10)</label>
-                                <input type="range" id="energy-level" min="1" max="10" value="5">
-                                <div class="range-display">
-                                    <span>1</span>
-                                    <span id="energy-display">5</span>
-                                    <span>10</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="stress-level">Stress Level (1-10)</label>
-                                <input type="range" id="stress-level" min="1" max="10" value="5">
-                                <div class="range-display">
-                                    <span>1</span>
-                                    <span id="stress-display">5</span>
-                                    <span>10</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="sleep-hours">Sleep Hours</label>
-                                <input type="number" id="sleep-hours" step="0.5" placeholder="8.0">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="mood-notes">Notes</label>
-                            <textarea id="mood-notes" rows="3" placeholder="Any thoughts about your day..."></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="primary-btn">Save Mood Entry</button>
-                            <button type="button" onclick="hideMoodForm()" class="secondary-btn">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div id="mood-entries" class="list-container">
-                    <div id="mood-loading" class="loading">Loading mood entries...</div>
-                    <div id="mood-empty" class="empty-state hidden">
-                        <p>No mood entries yet. Start tracking your daily mood!</p>
+            <div id="mood-tab" class="tab-panel active">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2>Daily Mood Check</h2>
+                        <button id="add-mood-btn" class="btn btn-primary">
+                            <span>+</span>
+                            Log Today's Mood
+                        </button>
                     </div>
-                    <div id="mood-list" class="mood-entries hidden">
+
+                    <div id="mood-form" class="form-container hidden">
+                        <form id="create-mood-form">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">How are you feeling today?</h3>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="mood-level">Mood Level</label>
+                                    <div class="range-container">
+                                        <input type="range" id="mood-level" min="1" max="10" value="5">
+                                        <div class="range-display">
+                                            <span>1</span>
+                                            <span id="mood-display">5</span>
+                                            <span>10</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="energy-level">Energy Level</label>
+                                    <div class="range-container">
+                                        <input type="range" id="energy-level" min="1" max="10" value="5">
+                                        <div class="range-display">
+                                            <span>1</span>
+                                            <span id="energy-display">5</span>
+                                            <span>10</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="stress-level">Stress Level</label>
+                                    <div class="range-container">
+                                        <input type="range" id="stress-level" min="1" max="10" value="5">
+                                        <div class="range-display">
+                                            <span>1</span>
+                                            <span id="stress-display">5</span>
+                                            <span>10</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="sleep-hours">Sleep Hours</label>
+                                    <input type="number" id="sleep-hours" step="0.5" min="0" max="24" placeholder="8.0">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="mood-notes">Notes</label>
+                                <textarea id="mood-notes" rows="3" placeholder="Any thoughts about your day..."></textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Save Mood Entry</button>
+                                <button type="button" onclick="hideMoodForm()" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="mood-entries" class="list-container">
+                        <div id="mood-loading" class="loading">Loading mood entries...</div>
+                        <div id="mood-empty" class="empty-state hidden">
+                            <div class="empty-state-icon">😊</div>
+                            <p>No mood entries yet. Start tracking your daily mood!</p>
+                        </div>
+                        <div id="mood-list" class="hidden"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Journal Tab -->
-            <div id="journal-tab" class="tab-content">
-                <div class="section-header">
-                    <h2>📝 Journal</h2>
-                    <button id="add-journal-btn" class="primary-btn">New Entry</button>
-                </div>
-
-                <div id="journal-form" class="form-container hidden">
-                    <form id="create-journal-form">
-                        <h3>Write Your Thoughts</h3>
-                        <div class="form-group">
-                            <label for="journal-title">Title (optional)</label>
-                            <input type="text" id="journal-title" placeholder="What's on your mind?">
-                        </div>
-                        <div class="form-group">
-                            <label for="journal-content">Your thoughts *</label>
-                            <textarea id="journal-content" rows="8" placeholder="Write freely..." required></textarea>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="mood-before">Mood Before (1-10)</label>
-                                <input type="number" id="mood-before" min="1" max="10">
-                            </div>
-                            <div class="form-group">
-                                <label for="mood-after">Mood After (1-10)</label>
-                                <input type="number" id="mood-after" min="1" max="10">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="journal-tags">Tags (comma-separated)</label>
-                            <input type="text" id="journal-tags" placeholder="anxiety, work, relationships">
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="primary-btn">Save Entry</button>
-                            <button type="button" onclick="hideJournalForm()" class="secondary-btn">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div id="journal-entries" class="list-container">
-                    <div id="journal-loading" class="loading">Loading journal entries...</div>
-                    <div id="journal-empty" class="empty-state hidden">
-                        <p>No journal entries yet. Start writing your thoughts!</p>
+            <div id="journal-tab" class="tab-panel">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2>Journal</h2>
+                        <button id="add-journal-btn" class="btn btn-primary">
+                            <span>+</span>
+                            New Entry
+                        </button>
                     </div>
-                    <div id="journal-list" class="journal-entries hidden">
+
+                    <div id="journal-form" class="form-container hidden">
+                        <form id="create-journal-form">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Write Your Thoughts</h3>
+                            
+                            <div class="form-group">
+                                <label for="journal-title">Title (optional)</label>
+                                <input type="text" id="journal-title" placeholder="What's on your mind?">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="journal-content">Your thoughts *</label>
+                                <textarea id="journal-content" rows="8" placeholder="Write freely..." required></textarea>
+                            </div>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="mood-before">Mood Before (1-10)</label>
+                                    <input type="number" id="mood-before" min="1" max="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mood-after">Mood After (1-10)</label>
+                                    <input type="number" id="mood-after" min="1" max="10">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="journal-tags">Tags (comma-separated)</label>
+                                <input type="text" id="journal-tags" placeholder="anxiety, work, relationships">
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Save Entry</button>
+                                <button type="button" onclick="hideJournalForm()" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="journal-entries" class="list-container">
+                        <div id="journal-loading" class="loading">Loading journal entries...</div>
+                        <div id="journal-empty" class="empty-state hidden">
+                            <div class="empty-state-icon">📝</div>
+                            <p>No journal entries yet. Start writing your thoughts!</p>
+                        </div>
+                        <div id="journal-list" class="hidden"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Activities Tab -->
-            <div id="activities-tab" class="tab-content">
-                <div class="section-header">
-                    <h2>🌱 Wellness Activities</h2>
-                    <button id="add-activity-btn" class="primary-btn">Log Activity</button>
-                </div>
+            <div id="activities-tab" class="tab-panel">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2>Wellness Activities</h2>
+                        <button id="add-activity-btn" class="btn btn-primary">
+                            <span>+</span>
+                            Log Activity
+                        </button>
+                    </div>
 
-                <div id="activity-form" class="form-container hidden">
-                    <form id="create-activity-form">
-                        <h3>What wellness activity did you do?</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="activity-type">Activity Type</label>
-                                <select id="activity-type">
-                                    <option value="meditation">Meditation</option>
-                                    <option value="exercise">Exercise</option>
-                                    <option value="reading">Reading</option>
-                                    <option value="social">Social Activity</option>
-                                    <option value="music">Music</option>
-                                    <option value="art">Art/Creativity</option>
-                                    <option value="nature">Nature Time</option>
-                                    <option value="sleep">Rest/Sleep</option>
-                                    <option value="gratitude">Gratitude Practice</option>
-                                    <option value="therapy">Therapy/Counseling</option>
-                                    <option value="other">Other</option>
-                                </select>
+                    <div id="activity-form" class="form-container hidden">
+                        <form id="create-activity-form">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">What wellness activity did you do?</h3>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="activity-type">Activity Type</label>
+                                    <select id="activity-type">
+                                        <option value="meditation">Meditation</option>
+                                        <option value="exercise">Exercise</option>
+                                        <option value="reading">Reading</option>
+                                        <option value="social">Social Activity</option>
+                                        <option value="music">Music</option>
+                                        <option value="art">Art/Creativity</option>
+                                        <option value="nature">Nature Time</option>
+                                        <option value="sleep">Rest/Sleep</option>
+                                        <option value="gratitude">Gratitude Practice</option>
+                                        <option value="therapy">Therapy/Counseling</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="activity-duration">Duration (minutes)</label>
+                                    <input type="number" id="activity-duration" min="0" placeholder="30">
+                                </div>
                             </div>
+                            
                             <div class="form-group">
-                                <label for="activity-duration">Duration (minutes)</label>
-                                <input type="number" id="activity-duration" placeholder="30">
+                                <label for="activity-description">Description</label>
+                                <textarea id="activity-description" rows="3" placeholder="What did you do?"></textarea>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="activity-description">Description</label>
-                            <textarea id="activity-description" rows="3" placeholder="What did you do?"></textarea>
-                        </div>
-                        <div class="form-row">
+                            
                             <div class="form-group">
                                 <label for="mood-impact">Mood Impact (-5 to +5)</label>
                                 <input type="number" id="mood-impact" min="-5" max="5" placeholder="0">
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="activity-notes">Notes</label>
-                            <textarea id="activity-notes" rows="2" placeholder="How did it make you feel?"></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="primary-btn">Log Activity</button>
-                            <button type="button" onclick="hideActivityForm()" class="secondary-btn">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div id="activities-list" class="list-container">
-                    <div id="activities-loading" class="loading">Loading activities...</div>
-                    <div id="activities-empty" class="empty-state hidden">
-                        <p>No wellness activities logged yet. Start tracking your self-care!</p>
+                            
+                            <div class="form-group">
+                                <label for="activity-notes">Notes</label>
+                                <textarea id="activity-notes" rows="2" placeholder="How did it make you feel?"></textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Log Activity</button>
+                                <button type="button" onclick="hideActivityForm()" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </form>
                     </div>
-                    <div id="activities-content" class="activities-list hidden">
+
+                    <div id="activities-list" class="list-container">
+                        <div id="activities-loading" class="loading">Loading activities...</div>
+                        <div id="activities-empty" class="empty-state hidden">
+                            <div class="empty-state-icon">🌱</div>
+                            <p>No wellness activities logged yet. Start tracking your self-care!</p>
+                        </div>
+                        <div id="activities-content" class="hidden"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Goals Tab -->
-            <div id="goals-tab" class="tab-content">
-                <div class="section-header">
-                    <h2>🎯 Wellness Goals</h2>
-                    <button id="add-goal-btn" class="primary-btn">Set Goal</button>
-                </div>
-
-                <div id="goal-form" class="form-container hidden">
-                    <form id="create-goal-form">
-                        <h3>Set a Wellness Goal</h3>
-                        <div class="form-group">
-                            <label for="goal-title">Goal Title *</label>
-                            <input type="text" id="goal-title" placeholder="e.g., Meditate daily" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="goal-description">Description</label>
-                            <textarea id="goal-description" rows="2" placeholder="Describe your goal..."></textarea>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="goal-type">Goal Type</label>
-                                <select id="goal-type">
-                                    <option value="mood">Improve Mood</option>
-                                    <option value="activity">Increase Activities</option>
-                                    <option value="sleep">Better Sleep</option>
-                                    <option value="social">Social Connection</option>
-                                    <option value="exercise">Exercise Regularly</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="target-value">Target Value</label>
-                                <input type="number" id="target-value" step="0.1" placeholder="e.g., 7.0 for mood avg">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="target-date">Target Date</label>
-                            <input type="date" id="target-date">
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="primary-btn">Set Goal</button>
-                            <button type="button" onclick="hideGoalForm()" class="secondary-btn">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div id="goals-list" class="list-container">
-                    <div id="goals-loading" class="loading">Loading goals...</div>
-                    <div id="goals-empty" class="empty-state hidden">
-                        <p>No wellness goals set yet. Start setting some positive intentions!</p>
+            <div id="goals-tab" class="tab-panel">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2>Wellness Goals</h2>
+                        <button id="add-goal-btn" class="btn btn-primary">
+                            <span>+</span>
+                            Set Goal
+                        </button>
                     </div>
-                    <div id="goals-content" class="goals-list hidden">
+
+                    <div id="goal-form" class="form-container hidden">
+                        <form id="create-goal-form">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Set a Wellness Goal</h3>
+                            
+                            <div class="form-group">
+                                <label for="goal-title">Goal Title *</label>
+                                <input type="text" id="goal-title" placeholder="e.g., Meditate daily" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="goal-description">Description</label>
+                                <textarea id="goal-description" rows="2" placeholder="Describe your goal..."></textarea>
+                            </div>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="goal-type">Goal Type</label>
+                                    <select id="goal-type">
+                                        <option value="mood">Improve Mood</option>
+                                        <option value="activity">Increase Activities</option>
+                                        <option value="sleep">Better Sleep</option>
+                                        <option value="social">Social Connection</option>
+                                        <option value="exercise">Exercise Regularly</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="target-value">Target Value</label>
+                                    <input type="number" id="target-value" step="0.1" placeholder="e.g., 7.0 for mood avg">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="target-date">Target Date</label>
+                                <input type="date" id="target-date">
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Set Goal</button>
+                                <button type="button" onclick="hideGoalForm()" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="goals-list" class="list-container">
+                        <div id="goals-loading" class="loading">Loading goals...</div>
+                        <div id="goals-empty" class="empty-state hidden">
+                            <div class="empty-state-icon">🎯</div>
+                            <p>No wellness goals set yet. Start setting some positive intentions!</p>
+                        </div>
+                        <div id="goals-content" class="hidden"></div>
                     </div>
                 </div>
             </div>

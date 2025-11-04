@@ -6,26 +6,30 @@ from datetime import datetime, timedelta
 
 # Mood Entry CRUD
 def create_mood_entry(db: Session, mood_entry: schemas.MoodEntryCreate):
-    # Check if entry already exists for today
-    today = datetime.now().date()
-    existing = db.query(models.MoodEntry).filter(
-        func.date(models.MoodEntry.date) == today
-    ).first()
+    try:
+        # Check if entry already exists for today
+        today = datetime.now().date()
+        existing = db.query(models.MoodEntry).filter(
+            func.date(models.MoodEntry.date) == today
+        ).first()
 
-    if existing:
-        # Update existing entry
-        for key, value in mood_entry.model_dump().items():
-            setattr(existing, key, value)
+        if existing:
+            # Update existing entry
+            for key, value in mood_entry.model_dump(exclude_unset=True).items():
+                setattr(existing, key, value)
+            db.commit()
+            db.refresh(existing)
+            return existing
+
+        # Create new entry
+        db_entry = models.MoodEntry(**mood_entry.model_dump())
+        db.add(db_entry)
         db.commit()
-        db.refresh(existing)
-        return existing
-
-    # Create new entry
-    db_entry = models.MoodEntry(**mood_entry.model_dump())
-    db.add(db_entry)
-    db.commit()
-    db.refresh(db_entry)
-    return db_entry
+        db.refresh(db_entry)
+        return db_entry
+    except Exception as e:
+        db.rollback()
+        raise e
 
 def get_mood_entries(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.MoodEntry).order_by(desc(models.MoodEntry.date)).offset(skip).limit(limit).all()
