@@ -14,14 +14,14 @@ def create_mood_entry(db: Session, mood_entry: schemas.MoodEntryCreate):
 
     if existing:
         # Update existing entry
-        for key, value in mood_entry.dict().items():
+        for key, value in mood_entry.model_dump().items():
             setattr(existing, key, value)
         db.commit()
         db.refresh(existing)
         return existing
 
     # Create new entry
-    db_entry = models.MoodEntry(**mood_entry.dict())
+    db_entry = models.MoodEntry(**mood_entry.model_dump())
     db.add(db_entry)
     db.commit()
     db.refresh(db_entry)
@@ -38,7 +38,7 @@ def get_mood_entry_by_date(db: Session, date: datetime):
 def update_mood_entry(db: Session, entry_id: int, entry_update: schemas.MoodEntryCreate):
     db_entry = db.query(models.MoodEntry).filter(models.MoodEntry.id == entry_id).first()
     if db_entry:
-        for key, value in entry_update.dict().items():
+        for key, value in entry_update.model_dump().items():
             setattr(db_entry, key, value)
         db.commit()
         db.refresh(db_entry)
@@ -53,7 +53,7 @@ def delete_mood_entry(db: Session, entry_id: int):
 
 # Journal Entry CRUD
 def create_journal_entry(db: Session, journal_entry: schemas.JournalEntryCreate):
-    db_entry = models.JournalEntry(**journal_entry.dict())
+    db_entry = models.JournalEntry(**journal_entry.model_dump())
     db.add(db_entry)
     db.commit()
     db.refresh(db_entry)
@@ -71,7 +71,7 @@ def get_journal_entry_by_id(db: Session, entry_id: int):
 def update_journal_entry(db: Session, entry_id: int, entry_update: schemas.JournalEntryCreate):
     db_entry = db.query(models.JournalEntry).filter(models.JournalEntry.id == entry_id).first()
     if db_entry:
-        for key, value in entry_update.dict().items():
+        for key, value in entry_update.model_dump().items():
             setattr(db_entry, key, value)
         db.commit()
         db.refresh(db_entry)
@@ -86,7 +86,7 @@ def delete_journal_entry(db: Session, entry_id: int):
 
 # Wellness Activity CRUD
 def create_wellness_activity(db: Session, activity: schemas.WellnessActivityCreate):
-    db_activity = models.WellnessActivity(**activity.dict())
+    db_activity = models.WellnessActivity(**activity.model_dump())
     db.add(db_activity)
     db.commit()
     db.refresh(db_activity)
@@ -103,7 +103,7 @@ def get_activities_by_type(db: Session, activity_type: str, skip: int = 0, limit
 def update_wellness_activity(db: Session, activity_id: int, activity_update: schemas.WellnessActivityCreate):
     db_activity = db.query(models.WellnessActivity).filter(models.WellnessActivity.id == activity_id).first()
     if db_activity:
-        for key, value in activity_update.dict().items():
+        for key, value in activity_update.model_dump().items():
             setattr(db_activity, key, value)
         db.commit()
         db.refresh(db_activity)
@@ -118,7 +118,7 @@ def delete_wellness_activity(db: Session, activity_id: int):
 
 # Goal CRUD
 def create_goal(db: Session, goal: schemas.GoalCreate):
-    db_goal = models.Goal(**goal.dict())
+    db_goal = models.Goal(**goal.model_dump())
     db.add(db_goal)
     db.commit()
     db.refresh(db_goal)

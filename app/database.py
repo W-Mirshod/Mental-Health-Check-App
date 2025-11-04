@@ -1,11 +1,18 @@
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+# Ensure data directory exists
+DATA_DIR = Path("./data")
+DATA_DIR.mkdir(exist_ok=True)
+
 SQLALCHEMY_DATABASE_URL = "sqlite:///./data/mental_health.db"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, 
+    connect_args={"check_same_thread": False},
+    echo=False
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

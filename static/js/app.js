@@ -419,24 +419,38 @@ document.addEventListener('input', function(e) {
 });
 
 // Event listeners
-document.getElementById('create-mood-form').addEventListener('submit', createMoodEntry);
-document.getElementById('create-journal-form').addEventListener('submit', createJournalEntry);
-document.getElementById('create-activity-form').addEventListener('submit', createActivity);
-document.getElementById('create-goal-form').addEventListener('submit', createGoal);
+document.addEventListener('DOMContentLoaded', function() {
+    // Form submissions
+    document.getElementById('create-mood-form').addEventListener('submit', createMoodEntry);
+    document.getElementById('create-journal-form').addEventListener('submit', createJournalEntry);
+    document.getElementById('create-activity-form').addEventListener('submit', createActivity);
+    document.getElementById('create-goal-form').addEventListener('submit', createGoal);
+
+    // Button click handlers
+    document.getElementById('add-mood-btn').addEventListener('click', showMoodForm);
+    document.getElementById('add-journal-btn').addEventListener('click', showJournalForm);
+    document.getElementById('add-activity-btn').addEventListener('click', showActivityForm);
+    document.getElementById('add-goal-btn').addEventListener('click', showGoalForm);
+
+    // Initialize the app
+    init();
+});
 
 // Initialize the app
 async function init() {
-    await Promise.all([
-        loadDashboardStats(),
-        loadMoodEntries(),
-        loadJournalEntries(),
-        loadActivities(),
-        loadGoals()
-    ]);
+    try {
+        await Promise.all([
+            loadDashboardStats(),
+            loadMoodEntries(),
+            loadJournalEntries(),
+            loadActivities(),
+            loadGoals()
+        ]);
 
-    // Set default tab
-    showTab('mood');
+        // Set default tab
+        showTab('mood');
+    } catch (error) {
+        console.error('Error initializing app:', error);
+        showMessage('Failed to load application. Please refresh the page.', 'error');
+    }
 }
-
-// Start the app
-init();

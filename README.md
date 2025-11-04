@@ -31,6 +31,15 @@ A comprehensive web application for tracking daily mood, journaling thoughts, lo
 3. **Open your browser**:
    Navigate to `http://localhost:8004`
 
+## Production Features
+
+- **Modern UI**: Beautiful gradient design with smooth animations and responsive layout
+- **Error Handling**: Comprehensive error handling throughout the application
+- **CORS Support**: Configured for cross-origin requests
+- **Health Check**: `/health` endpoint for monitoring
+- **Security**: Non-root user in Docker container
+- **Database**: Auto-initialization with proper directory handling
+
 ## Usage
 
 ### Mood Tracking
